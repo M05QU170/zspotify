@@ -277,10 +277,10 @@ class ZSpotify:
             filename = f"{artist_name} - " + filename
 
         elif caller == "show":
-            filename = f"{audio_number}. {audio_name}"
+            return f"{artist_name} - {audio_name}"
 
         elif caller == "episode":
-            filename = f"{artist_name} - {audio_number}. {audio_name}"
+            return f"{artist_name} - {audio_name}"
 
         else:
             filename = f"{artist_name} - {audio_name}"
@@ -359,7 +359,7 @@ class ZSpotify:
         )
         print(f"Finished downloading {filename}")
 
-    def download_episode(self, episode_id, path=None, caller=None):
+    def download_episode(self, episode_id, path=None, caller="show"):
         if self.args.skip_downloaded and self.archive.exists(episode_id):
             print(f"Skipping {episode_id} - Already Downloaded")
             return True
