@@ -391,7 +391,7 @@ class ZSpotify:
         temp_path = base_path / show_name / (filename + "." + self.args.audio_format)
 
         for ext in (".mp3", ".ogg"):
-            if self.not_skip_existing and (base_path / (filename + ext)).exists():
+            if self.not_skip_existing and (base_path / show_name / (filename + ext)).exists():
                 print(f"Skipping {filename + ext} - Already downloaded")
                 return True
 
