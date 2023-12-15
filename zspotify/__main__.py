@@ -245,12 +245,12 @@ class ZSpotify:
         return True
 
     @staticmethod
-    def shorten_filename(filename, artist_name, audio_name, max_length=75):
-
+    def shorten_filename(filename, artist_name, audio_name, max_length=50):
         if len(filename) > max_length and len(artist_name) > (max_length // 2):
             filename = filename.replace(artist_name, "Various Artists")
         else:
-            truncated_audio_name = audio_name[:max_length]
+            excess_length = len(filename) - max_length
+            truncated_audio_name = audio_name[:-excess_length]
             filename = filename.replace(audio_name, truncated_audio_name)
 
         return filename
@@ -295,10 +295,7 @@ class ZSpotify:
             print(f"Skipping {track_id} - Already Downloaded")
             return True
 
-        if caller == "show" or caller == "episode":
-            track = self.respot.request.get_episode_info(track_id)
-        else:
-            track = self.respot.request.get_track_info(track_id)
+        track = self.respot.request.get_track_info(track_id)
 
         if track is None:
             print(f"Skipping {track_id} - Could not get track info")
@@ -379,22 +376,19 @@ class ZSpotify:
 
         audio_name = episode.get("audio_name")
         audio_number = 0 #no episode number from spotify api
-        artist_name = episode.get("artist_name")
-        album_artist = episode.get("artist_name")
-        album_name = episode.get("show_name")
+        show_artist = episode.get("artist_name")
+        show_name = episode.get("show_name")
 
         filename = self.generate_filename(
             caller,
             audio_name,
             audio_number,
-            album_name,
-            artist_name,
+            show_name,
+            show_artist,
         )
 
-        base_path = self.music_dir
-        if caller == "show" or caller == "episode":
-            base_path = path or self.episodes_dir
-        temp_path = base_path / (filename + "." + self.args.audio_format)
+        base_path = self.download_dir or self.music_dir
+        temp_path = base_path / show_name / (filename + "." + self.args.audio_format)
 
         for ext in (".mp3", ".ogg"):
             if self.not_skip_existing and (base_path / (filename + ext)).exists():
@@ -410,7 +404,7 @@ class ZSpotify:
 
         self.archive.add(
             episode_id,
-            artist=artist_name,
+            artist=show_artist,
             track_name=audio_name,
             fullpath=output_path,
             audio_type="music",
@@ -419,14 +413,14 @@ class ZSpotify:
         print(f"Setting audiotags {filename}")
         self.tagger.set_audio_tags(
             output_path,
-            artists=artist_name,
+            artists=show_artist,
             name=audio_name,
-            album_name=album_name,
+            album_name=show_name,
             release_year=episode["release_year"],
             release_date=episode["release_date"],
             disc_number=episode["disc_number"],
             track_number=audio_number,
-            album_artist=album_artist,
+            album_artist=show_artist,
             track_id_str=episode["id"],
             image_url=episode["image_url"],
             description=episode["description"],
