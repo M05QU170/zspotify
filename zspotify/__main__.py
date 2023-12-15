@@ -387,7 +387,7 @@ class ZSpotify:
             show_artist,
         )
 
-        base_path = self.download_dir or self.music_dir
+        base_path = self.episodes_dir
         temp_path = base_path / show_name / (filename + "." + self.args.audio_format)
 
         for ext in (".mp3", ".ogg"):
