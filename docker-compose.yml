@@ -1,7 +1,7 @@
 version: "3"
 services:
   zspotify:
-    image: jsavargas/zspotify
+    image: 25654c2f5e45
     volumes:
       - ${HOME}/.zspotify:/root/.zspotify
       - ${HOME}/Music:/root/Music

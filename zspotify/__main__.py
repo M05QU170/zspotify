@@ -362,6 +362,77 @@ class ZSpotify:
         )
         print(f"Finished downloading {filename}")
 
+    def download_episode(self, episode_id, path=None, caller=None):
+        if self.args.skip_downloaded and self.archive.exists(episode_id):
+            print(f"Skipping {episode_id} - Already Downloaded")
+            return True
+
+        episode = self.respot.request.get_episode_info(episode_id)
+
+        if episode is None:
+            print(f"Skipping {episode_id} - Could not get track info")
+            return True
+
+        if not episode["is_playable"]:
+            print(f"Skipping {episode['audio_name']} - Not Available")
+            return True
+
+        audio_name = episode.get("audio_name")
+        audio_number = 0 #no episode number from spotify api
+        artist_name = episode.get("artist_name")
+        album_artist = episode.get("artist_name")
+        album_name = episode.get("show_name")
+
+        filename = self.generate_filename(
+            caller,
+            audio_name,
+            audio_number,
+            album_name,
+            artist_name,
+        )
+
+        base_path = self.music_dir
+        if caller == "show" or caller == "episode":
+            base_path = path or self.episodes_dir
+        temp_path = base_path / (filename + "." + self.args.audio_format)
+
+        for ext in (".mp3", ".ogg"):
+            if self.not_skip_existing and (base_path / (filename + ext)).exists():
+                print(f"Skipping {filename + ext} - Already downloaded")
+                return True
+
+        output_path = self.respot.download(
+            episode_id, temp_path, self.args.audio_format, True
+        )
+
+        if output_path == "":
+            return
+
+        self.archive.add(
+            episode_id,
+            artist=artist_name,
+            track_name=audio_name,
+            fullpath=output_path,
+            audio_type="music",
+        )
+
+        print(f"Setting audiotags {filename}")
+        self.tagger.set_audio_tags(
+            output_path,
+            artists=artist_name,
+            name=audio_name,
+            album_name=album_name,
+            release_year=episode["release_year"],
+            release_date=episode["release_date"],
+            disc_number=episode["disc_number"],
+            track_number=audio_number,
+            album_artist=album_artist,
+            track_id_str=episode["id"],
+            image_url=episode["image_url"],
+            description=episode["description"],
+        )
+        print(f"Finished downloading {filename}")
+
     def download_playlist(self, playlist_id):
         playlist = self.respot.request.get_playlist_info(playlist_id)
         if not playlist:
@@ -512,7 +583,7 @@ class ZSpotify:
         elif parsed_url["artist"]:
             ret = self.download_artist(parsed_url["artist"])
         elif parsed_url["episode"]:
-            ret = self.download_track(parsed_url["episode"])
+            ret = self.download_episode(parsed_url["episode"])
         elif parsed_url["show"]:
             ret = self.download_all_show_episodes(parsed_url["show"])
         else:
@@ -530,7 +601,7 @@ class ZSpotify:
             print("Show has no episodes")
             return False
         for episode in episodes:
-            self.download_track(episode["id"], "show")
+            self.download_episode(episode["id"], "show")
         print(f"Finished downloading {show['name']} show")
         return True
 

@@ -18,7 +18,7 @@ API_ME = "https://api.spotify.com/v1/me/"
 
 class Respot:
     def __init__(
-        self, config_dir, force_premium, credentials, audio_format, antiban_wait_time
+            self, config_dir, force_premium, credentials, audio_format, antiban_wait_time
     ):
         self.config_dir: Path = config_dir
         self.credentials: Path = credentials
@@ -437,10 +437,12 @@ class RespotRequest:
             "scraped_episode_id": ["id"],
             "is_playable": info["is_playable"],
             "release_date": info["release_date"],
+            "description": info["description"]
         }
 
     def get_show_episodes(self, show_id):
         """returns episodes of a show"""
+        print("getting show episodes")
         episodes = []
         offset = 0
         limit = 50
@@ -452,13 +454,16 @@ class RespotRequest:
             ).json()
             offset += limit
             for episode in resp["items"]:
-                episodes.append(
-                    {
-                        "id": episode["id"],
-                        "name": episode["name"],
-                        "release_date": episode["release_date"],
-                    }
-                )
+                if episode is not None:
+                    episodes.append(
+                        {
+                            "id": episode.get("id"),
+                            "name": episode["name"],
+                            "release_date": episode["release_date"],
+                        }
+                    )
+                else:
+                    continue
 
             if len(resp["items"]) < limit:
                 break
@@ -551,8 +556,8 @@ class RespotRequest:
         # TODO: Add search in episodes and shows
 
         if (
-            len(ret_tracks) + len(ret_albums) + len(ret_playlists) + len(ret_artists)
-            == 0
+                len(ret_tracks) + len(ret_albums) + len(ret_playlists) + len(ret_artists)
+                == 0
         ):
             return None
         else:

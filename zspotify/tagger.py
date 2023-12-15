@@ -8,7 +8,8 @@ class AudioTagger:
         pass
 
     def set_audio_tags(self, fullpath, artists=None, name=None, album_name=None, release_year=None,
-                       disc_number=None, track_number=None, track_id_str=None, album_artist=None, image_url=None):
+                       disc_number=None, track_number=None, track_id_str=None, album_artist=None, image_url=None,
+                       description=None, release_date=None):
         """sets music_tag metadata using mutagen if possible"""
         
         album_artist = album_artist or artists  # Use artists if album_artist is None
@@ -17,24 +18,24 @@ class AudioTagger:
 
         if extension == 'mp3':
             self._set_mp3_tags(fullpath, artists, name, album_name, release_year, disc_number,
-                               track_number, track_id_str, album_artist, image_url)
+                               track_number, track_id_str, album_artist, image_url, description, release_date)
         else:
             self._set_other_tags(fullpath, artists, name, album_name, release_year, disc_number,
                                  track_number, track_id_str, image_url)
 
     def _set_mp3_tags(self, fullpath, artist, name, album_name, release_year, disc_number, 
-                      track_number, track_id_str, album_artist, image_url):
+                      track_number, track_id_str, album_artist, image_url, description, release_date):
         tags = id3.ID3(fullpath)
 
         mp3_map = {
             "TPE1": artist,
             "TIT2": name,
             "TALB": album_name,
-            "TDRC": release_year,
+            "TDRC": release_date,
             "TDOR": release_year,
             "TPOS": str(disc_number) if disc_number else None,
             "TRCK": str(track_number) if track_number else None,
-            "COMM": "https://open.spotify.com/track/" + track_id_str if track_id_str else None,
+            "COMM": description if description else "https://open.spotify.com/track/" + track_id_str if track_id_str else None,
             "TPE2": album_artist,
         }
 
