@@ -20,6 +20,7 @@ _ANTI_BAN_WAIT_TIME_ALBUMS = os.environ.get("ANTI_BAN_WAIT_TIME_ALBUMS", 30)
 _LIMIT_RESULTS = os.environ.get("LIMIT_RESULTS", 10)
 
 try:
+
     __version__ = metadata.version("zspotify")
 except metadata.PackageNotFoundError:
     __version__ = "unknown"
@@ -285,7 +286,7 @@ class ZSpotify:
         else:
             filename = f"{artist_name} - {audio_name}"
 
-        filename = self.shorten_filename(filename, artist_name, audio_name)
+        # filename = self.shorten_filename(filename, artist_name, audio_name)
         filename = RespotUtils.sanitize_data(filename)
 
         return filename
@@ -360,6 +361,7 @@ class ZSpotify:
         print(f"Finished downloading {filename}")
 
     def download_episode(self, episode_id, path=None, caller="show"):
+
         if self.args.skip_downloaded and self.archive.exists(episode_id):
             print(f"Skipping {episode_id} - Already Downloaded")
             return True
@@ -425,6 +427,7 @@ class ZSpotify:
             image_url=episode["image_url"],
             description=episode["description"],
         )
+
         print(f"Finished downloading {filename}")
 
     def download_playlist(self, playlist_id):
@@ -516,6 +519,7 @@ class ZSpotify:
 
         # Sanitize beforehand
         artists = RespotUtils.sanitize_data(album["artists"])
+        main_artist = artists.split(',')[0];
         album_name = RespotUtils.sanitize_data(
             f"{album['release_date']} - {album['name']}"
         )
@@ -523,7 +527,7 @@ class ZSpotify:
         print(f"Downloading {artists} - {album_name} album")
 
         # Concat download path
-        basepath = self.music_dir / artists / album_name
+        basepath = self.music_dir / main_artist / album_name
 
         for song in songs:
             # Append disc number to filepath if more than 1 disc
