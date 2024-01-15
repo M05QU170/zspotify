@@ -731,7 +731,7 @@ class ZSpotify:
                 if "spotify.com" in self.args.episode:
                     self.download_by_url(episode)
                 else:
-                    self.download_track(episode)
+                    self.download_episode(episode)
         elif self.args.full_show:
             for show in self.split_input(self.args.full_show):
                 if "spotify.com" in self.args.full_show:

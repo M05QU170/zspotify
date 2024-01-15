@@ -335,35 +335,45 @@ class RespotRequest:
         offset = 0
         limit = 50
         include_groups = "album,compilation,single"
+        splited_include_groups = include_groups.split(',')
 
         albums = []
-        resp = self.authorized_get_request(
-            f"https://api.spotify.com/v1/artists/{artists_id}/albums",
-            params={"limit": limit, "include_groups": include_groups, "offset": offset},
-        ).json()
-        print("###   Albums   ###")
-        for album in resp["items"]:
-            if match := re.search("(\\d{4})", album["release_date"]):
-                print(" #", album["name"])
-                albums.append(
-                    {
-                        "id": album["id"],
-                        "name": album["name"],
-                        "release_date": match.group(1),
-                        "total_tracks": album["total_tracks"],
-                    }
-                )
-            else:
-                print(" #", album["name"])
-                albums.append(
-                    {
-                        "id": album["id"],
-                        "name": album["name"],
-                        "release_date": album["release_date"],
-                        "total_tracks": album["total_tracks"],
-                    }
-                )
-        return resp["items"]
+
+        for include_group in splited_include_groups:
+            while True:
+                resp = self.authorized_get_request(
+                    f"https://api.spotify.com/v1/artists/{artists_id}/albums",
+                    params={"limit": limit, "include_groups": include_group, "offset": offset},
+                ).json()
+                print("###   Albums   ###")
+
+                if len(resp["items"]) == 0:
+                    offset = 0
+                    break
+
+                offset += limit
+                for album in resp["items"]:
+                 if match := re.search("(\\d{4})", album["release_date"]):
+                       print(" #", album["name"])
+                       albums.append(
+                            {
+                                "id": album["id"],
+                                "name": album["name"],
+                                "release_date": match.group(1),
+                                "total_tracks": album["total_tracks"],
+                          }
+                     )
+                else:
+                    print(" #", album["name"])
+                    albums.append(
+                        {
+                            "id": album["id"],
+                            "name": album["name"],
+                            "release_date": album["release_date"],
+                            "total_tracks": album["total_tracks"],
+                        }
+                    )
+        return albums
 
     def get_liked_tracks(self):
         """Returns user's saved tracks"""
