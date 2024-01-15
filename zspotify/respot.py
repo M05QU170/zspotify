@@ -373,7 +373,7 @@ class RespotRequest:
                             "total_tracks": album["total_tracks"],
                         }
                     )
-        print("found " + len(albums))
+        print("found " , len(albums))
         return albums
 
     def get_liked_tracks(self):
