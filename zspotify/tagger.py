@@ -1,6 +1,8 @@
 import music_tag
 import requests
 from mutagen import id3
+import mutagen
+from mutagen.oggvorbis import OggVorbis
 
 class AudioTagger:
     
@@ -21,7 +23,7 @@ class AudioTagger:
                                track_number, track_id_str, album_artist, image_url, description, release_date)
         else:
             self._set_other_tags(fullpath, artists, name, album_name, release_year, disc_number,
-                                 track_number, track_id_str, image_url)
+                                 track_number, track_id_str, album_artist, image_url)
 
     def _set_mp3_tags(self, fullpath, artist, name, album_name, release_year, disc_number, 
                       track_number, track_id_str, album_artist, image_url, description, release_date):
@@ -51,11 +53,12 @@ class AudioTagger:
         tags.save()
 
     def _set_other_tags(self, fullpath, artist, name, album_name, release_year, disc_number, 
-                        track_number, track_id_str, image_url):
+                        track_number, track_id_str, album_artist, image_url):
         tags = music_tag.load_file(fullpath)
 
         other_map = {
             "artist": artist,
+            "albumartist": album_artist,
             "tracktitle": name,
             "album": album_name,
             "year": release_year,
@@ -73,4 +76,8 @@ class AudioTagger:
             if albumart:
                 tags["artwork"] = albumart
 
-        tags.save()
+#       tags.save()
+        try:
+            tags.save()
+        except mutagen.oggvorbis.OggVorbisHeaderError:
+            pass
